@@ -12,14 +12,14 @@ def run():
     file = openpyxl.load_workbook(name_file)
     sheet1 = file.get_sheet_by_name('LEL')
     sheet2 = file.get_sheet_by_name('H2S')
-    cell_lel = sheet1['H4':'H19']
-    cell_h2s = sheet2['H4':'H22']
+    cell_lel = sheet1['H3':'H18']
+    cell_h2s = sheet2['H3':'H21']
     dateNow = datetime.now()
     lookCell(cell_lel, dateNow, 730)
     lookCell(cell_h2s, dateNow, 365)
     #salta a las funciones para llenar las celdas con datos nuevos
-    llenar_cell(sheet1, list_DaysLel, count_LEL, 'I4', 'I19')
-    llenar_cell(sheet2, list_DaysH2s, count_H2S, 'I4', 'I22')
+    llenar_cell(sheet1, list_DaysLel, count_LEL, 'I3', 'I18')
+    llenar_cell(sheet2, list_DaysH2s, count_H2S, 'I3', 'I21')
     #guarda archivo
     file.save(name_file)
 
