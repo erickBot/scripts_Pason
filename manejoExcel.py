@@ -2,31 +2,38 @@ import openpyxl
 from datetime import datetime, date, time, timedelta
 import calendar
 
-list_DaysLel = []
-list_DaysH2s = []
-count_LEL = []
-count_H2S = []
+list_vigencia = []
+count_sensor = []
 
 def run():
+
     name_file = "Lista_de_Sensores_HGAS.xlsx"
     file = openpyxl.load_workbook(name_file)
-    sheet1 = file.get_sheet_by_name('LEL')
-    sheet2 = file.get_sheet_by_name('H2S')
-    cell_lel = sheet1['H3':'H18']
-    cell_h2s = sheet2['H3':'H21']
-    dateNow = datetime.now()
-    lookCell(cell_lel, dateNow, 730)
-    lookCell(cell_h2s, dateNow, 365)
-    #salta a las funciones para llenar las celdas con datos nuevos
-    llenar_cell(sheet1, list_DaysLel, count_LEL, 'I3', 'I18')
-    llenar_cell(sheet2, list_DaysH2s, count_H2S, 'I3', 'I21')
-    #guarda archivo
+    #<file.sheetnames> devuelve los nombres de las hojas en una lista
+    list_sheetbyName = file.sheetnames
+
+    for name in list_sheetbyName:
+        sheet = file.get_sheet_by_name(name)
+        num_row = sheet.max_row
+        celdas= sheet['H3':'H' + str(num_row)]
+        dateNow = datetime.now()
+        if (name == 'LEL'):
+            vigencia = 730
+        if (name == 'H2S'):
+            vigencia = 365
+
+        lookCell(celdas, dateNow, vigencia)
+
+        #salta a las funciones para llenar las celdas con datos nuevos
+        llenar_cell(sheet, list_vigencia, count_sensor, 'I3', 'I' + str(num_row))
+        #guarda archivo
+        list_vigencia.clear()
+        count_sensor.clear()
+    
     file.save(name_file)
 
-    print(count_LEL)
-    print(count_H2S)
 
-def lookCell(celdas, dateNow, totalDays):
+def lookCell(celdas, dateNow, vigencia):
     expirados = 0
     porVencer = 0
     vigentes = 0
@@ -34,12 +41,10 @@ def lookCell(celdas, dateNow, totalDays):
     for row in celdas:
         for cell in row:
             dateLast= cell.value
-            days = dateNow - dateLast
-            diferencia = totalDays - days.days
-            if totalDays == 730:
-                list_DaysLel.append(diferencia)
-            if totalDays == 365:
-                list_DaysH2s.append(diferencia)
+            dias = dateNow - dateLast
+            diferencia = vigencia - dias.days 
+            list_vigencia.append(diferencia)
+    
             if diferencia < 0:
                 expirados += 1
             if diferencia > 0 and diferencia < 30:
@@ -47,28 +52,24 @@ def lookCell(celdas, dateNow, totalDays):
             if diferencia > 30:
                 vigentes += 1
 
-    if totalDays == 730:
-        count_LEL.append(porVencer)
-        count_LEL.append(expirados)
-        count_LEL.append(vigentes)
+    count_sensor.append(porVencer)
+    count_sensor.append(expirados)
+    count_sensor.append(vigentes)
+
+    print(count_sensor)
 
 
-    else:
-        count_H2S.append(porVencer)
-        count_H2S.append(expirados)
-        count_H2S.append(vigentes)
-
-def llenar_cell(sheet, list_Days, countList, cellInit, cellEnd):
+def llenar_cell(sheet, list_vigencia, count_sensor, cellInit, cellEnd):
     i = 0
     cell_list = sheet[cellInit : cellEnd]
     for row in cell_list:
         for cell in row:
-            cell.value = list_Days[i]
+            cell.value = list_vigencia[i]
             i += 1
 
-    sheet['I24'] = countList[0] #porVencer
-    sheet['I25'] = countList[1] #expirados
-    sheet['I26'] = countList[2] #vigentes
+    sheet['R3'] = count_sensor[0] #porVencer
+    sheet['R4'] = count_sensor[1] #expirados
+    sheet['R5'] = count_sensor[2] #vigentes
 
 if __name__ == "__main__":
     run()
